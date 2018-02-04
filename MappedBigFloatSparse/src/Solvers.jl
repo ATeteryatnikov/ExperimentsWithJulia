@@ -25,21 +25,12 @@ function doMCG(A,B,x, norm_residual, limit)
 end
 
 
-""" diagonal matrix. ones on diagonal"""
-function MatrixI(rows)
-    matr = zeros(rows,rows)
-    for i in 1:1:rows
-        matr[i,i] = 1
-    end
-    return matr
-end
-
 """ QR Decomposition. function get (A) - square matrix """
 function doQRDecomposition(A)
 
     R = copy(A)
     last = size(A)[1]
-    Q = MatrixI(last)
+    Q = eye(last, last)
     for i in 1:1:(last-1)
 
         column_i = R[i:end, i]
@@ -79,20 +70,19 @@ function TranspositionRows(A, i, j)
     A[j,:] = temp
 end
 
-""" LU - Decomposition. (Требует доработки для матриц перестановок P и Q.
-Обзая схема P*A*Q = LU ) """
+""" LU - Decomposition. ( P*A*Q = LU ) """
 function DoLUDecomposition(A)
     last = size(A)[1]
     CompactMatrix = copy(A)
-    P = MatrixI(last)
-    Q = MatrixI(last)
+    P = eye(last, last)
+    Q = eye(last, last)
 
     for diagNum in 1:1:last
 
         num = findmax(abs(CompactMatrix[diagNum:end, diagNum:end]))[2]
 
         if (num == 0)
-            print("\nНЕ НАЙДЕН МАКС ЭЛЕМЕНТ\n")
+            print("\n РћС€РёР±РєР° \n")
         elseif (mod(num, last-diagNum+1)==0)
             numCol = diagNum + div(num, last-diagNum+1)-1
             numlast = last
@@ -122,5 +112,5 @@ function DoLUDecomposition(A)
     U = copy(UpperTriangular(CompactMatrix))
     for i in 1:1:5 U[i,i]=1 end
 
-    return [P,L,U,Q]    #Исходная матрица получается P'*L*U*Q'
+    return [P,L,U,Q]    #  P'*L*U*Q'
 end
