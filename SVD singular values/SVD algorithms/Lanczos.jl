@@ -1,41 +1,33 @@
-function copyDiagonal(A)
-    n = size(A)[1]
-    for k in 2:1:n
-        A[k-1,k] = A[k,k-1]
-    end
-    return A
-end
 
-""" Algorithm from Lioyd - Numerical Line page 277 (for Symmetric) """
+""" Algorithm from Lioyd - Numerical Line page 277 (Modified for not Symmetric) """
 function Lanczos(A)
 
-    n = size(A)[1]
+    m = size(A)[1]
+	n = size(A)[2]
+    ### alpha - diagonal elements
+   	alpha = Array{BigFloat}(n)
 
-    T = zeros(n+1,n)
+   	### betta - subdiagonal elements
+   	betta = Array{BigFloat}(n-1)
+    
     b = rand(n)
     q = b/norm(b)
     q_prev = 0
     a = 0
     b = 0
-    for k in 1:1:n
-        v = A*q
-        T[k,k] = q'*v
+    for k in 1:1:n-1
+        v = A'*(A*q)
+        alpha[k] = q'*v
 
-        v = v - b*q_prev - T[k,k]*q
+        v = v - b*q_prev - alpha[k]*q
         b = norm(v)
-        T[k+1,k] = b
+        betta[k] = b
         q_prev = q
         q = v/b
     end
 
-    return copyDiagonal(T[1:n,:])
+    v = A'*(A*q)
+    alpha[n] = q'*v
+
+    return [alpha, betta]
 end
-
-
-
-print("test Lanczos\n")
-
-A = rand(100,30)
-symMatrix = A'*A
-res = Lanczos(symMatrix)
-nev = eigvals(res)-eigvals(symMatrix)
