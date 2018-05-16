@@ -1,4 +1,5 @@
 try
+    include("src/Matrices.jl")
     include("Lanczos.jl")
     include("DevideAndConqueror.jl")
 catch ex
@@ -15,7 +16,7 @@ function bisection(x, y, alpha, betta, lenBlock)
         return "Знаки совпали"
     end
 
-    while ( (y-x)>1e-15 )
+    while ( (y-x)>big(1e-10) )
         k = k + 1
         h = (y-x)/2
         z = x + h
@@ -51,9 +52,8 @@ function bisection(x, y, alpha, betta, lenBlock)
 end
 
 ###########################  Check FDACA with Bisection test
-
 #=
-x = -1
+x = 1
 lenBlock = 4
 
 alphas = [1 3 0.000007 9999 5 8]
@@ -75,8 +75,8 @@ oneValue = bisection(-1,0.5, alphas, bettas, lenBlock)
 print("\n метод бисекций получает: ",oneValue)
 fdacaRes = FDACA(oneValue, copy(alphas), bettas, lenBlock)
 print("\n Определитель в точке = ", fdacaRes)=#
-###########################  Check FDACA
 
+###########################  Check FDACA
 
 #=
 bigFloatMantissa = 100
@@ -96,21 +96,21 @@ detByFDACA = FDACA(x, listsAlphAndBetta[1], listsAlphAndBetta[2], lenBlock)
 diffDet = detTridiagonalMatrix - detByFDACA
 =#
 
+############    Check on Godunov matrix
 x = -1
 lenBlock = 4
-n = 40
+n = 10
 
-godunov = getGodunovMatrix(n)
-alphas = diag(godunov[1])
-bettas = diag(godunov[1],1)
-
+godunovLists = lanczos(getGodunovMatrix(n)[1])
+alphas = godunovLists[1]
+bettas = godunovLists[2]
 
 Af = toDense(alphas, bettas)
 res1 = det(Af - x*eye(n))
 res2 = FDACA(x, copy(alphas), copy(bettas), 4)
 diffres = res1 - res2
 
-eigVal = eigvals(Af)[2]
+eigVal = svdvals(Af)[2]
 print("\nOne eigen value is: ", eigVal)
 
 d = det(Af - eigVal*eye(n))
@@ -118,7 +118,7 @@ print("\n determinant in one eigen value point: ", d)
 detFDACA = FDACA(eigVal, copy(alphas), copy(bettas), 4)
 print("\n determinant by FDACA in one eigen value point: ", detFDACA)
 
-oneValue = bisection(1,1.3, copy(alphas), bettas, lenBlock)
+oneValue = bisection(5.5,5.8, copy(alphas), bettas, lenBlock)
 print("\n метод бисекций получает: ",oneValue)
 fdacaRes = FDACA(oneValue, copy(alphas), bettas, lenBlock)
 print("\n Определитель в точке = ", fdacaRes)
