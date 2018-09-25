@@ -1,5 +1,4 @@
 function norma(x)
-  result = big(0.0)
   x = x.^2
   result = sum(x)
   return result
