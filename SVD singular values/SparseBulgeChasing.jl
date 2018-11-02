@@ -1,65 +1,8 @@
-""" Получение матрицы Гивенса """
-function givensMatrix(size, a, b, numDiagonalElement=1, blockSize=1)
-
-    G = eye(size)
-    r = sqrt(a^2+b^2)
-    if (r==0)
-        return "Error r=0"
-    end
-    c = a/r
-    s = -b/r
-    G[numDiagonalElement, numDiagonalElement] = c
-    G[numDiagonalElement, numDiagonalElement+blockSize] = -s
-    G[numDiagonalElement+blockSize, numDiagonalElement] = s
-    G[numDiagonalElement+blockSize, numDiagonalElement+blockSize] = c
-
-    return G
-end
-
-""" Поиск сингулярных чисел трехдиагональной симметричной матрицы A (плотной)"""
-function bulgeChasing(A, starterNumElement, repeatCount)
-
-    rowsCount = size(A)[1]
-
-    for iter in 1:1:repeatCount
-
-        GM = givensMatrix(rowsCount, 
-                         A[starterNumElement,starterNumElement],
-                         A[starterNumElement+1,starterNumElement], starterNumElement, 1)
-        A = GM*A*GM'
-
-        for i in starterNumElement:1:(rowsCount-2)
-            GM = givensMatrix(rowsCount, A[i+1,i], A[i+2,i], i+1, 1)
-            A = GM*A*GM'
-        end
-
-        #GM = givensMatrix(rowsCount, A[rowsCount-1,rowsCount-1], A[rowsCount,rowsCount-1], rowsCount-1, 1)
-        #A = GM*A*GM'
-
-    end
-    A = setZeroElements(A, 1e-10)
-    return A
-end
-
-function setZeroElements(A, minVal)
-    m = size(A)[1]
-    for i in 1:1:m-2
-        for j in i+2:1:m
-            if (abs(A[i,j]) < minVal)
-                A[i,j] = 0
-            end
-            if (abs(A[j,i]) < minVal)
-                A[j,i] = 0
-            end
-        end
-    end
-    return A
-end
-
+""" функция возвращает косинус и синус - элементы матрицы Гивенса  """
 function getGVals(a, b)
     r = sqrt(a^2+b^2)
     if (r==0)
-        return "Error r==0"
+        return "Error r == 0"
     end
     c = a/r
     s = -b/r
@@ -69,7 +12,7 @@ end
 function sparseBulgeChasing(newAlphas, newBettas, numRepeat, startElement)
   
     N = length(newAlphas)  
-for numRep in 1:1:numRepeat
+    for numRep in 1:1:numRepeat
     # значения cos и sin для матрицы Гивенса (1,2).
         (cos0, sin0) = getGVals(newAlphas[1],newBettas[1])
     # после умножения трехдиагональной матрицы слева и справа на транспонированую матрицу Гивенса
@@ -121,28 +64,8 @@ for numRep in 1:1:numRepeat
         newBettas[N-1] = b2*cosN^2 - b2*sinN^2 + a2*cosN*sinN - a3*cosN*sinN
         newAlphas[N-1] = a2*cosN^2 - 2*b2*cosN*sinN + a3*sinN^2
         newAlphas[N] = a3*cosN^2 + 2*b2*cosN*sinN + a2*sinN^2
-
     end
-
-    fullMatr = Float64.(toDense(newAlphas, newBettas))
 
     return [newAlphas, newBettas]
 end
-
-
-##  Демонстрация
-n=50
-
-include("Lanczos.jl")
-godunovLists = lanczos(getGodunovMatrix(n)[1])
-alphas = godunovLists[1]
-bettas = godunovLists[2]
-
-Af = Array{Float64}(toDense(copy(alphas), copy(bettas)))
-
-sparseBCRes = sparseBulgeChasing(copy(alphas), copy(bettas),10000,1)
-
-svdValsBC = abs.(sparseBCRes[1])
-#originVals = svdvals(Af)
-#difference = originVals - svdValsBC
 
